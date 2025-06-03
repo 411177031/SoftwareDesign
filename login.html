@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登入頁面</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", Arial, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    button {
+      margin: 15px;
+      padding: 12px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 80%;
+    }
+
+    button:nth-child(2) {
+      background-color: #3498db;
+      color: white;
+    }
+
+    button:nth-child(3) {
+      background-color: #2ecc71;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>請選擇身份登入</h1>
+    <button onclick="loginAs('customer')">我是顧客</button><br>
+    <button onclick="loginAs('admin')">我是店員</button>
+  </div>
+
+  <script>
+    function loginAs(role) {
+      localStorage.setItem("userRole", role);
+      if (role === "customer") {
+        window.location.href = "index.html"; // 顧客首頁
+      } else if (role === "admin") {
+        window.location.href = "admin.html"; // 店員頁面
+      }
+    }
+  </script>
+</body>
+</html>

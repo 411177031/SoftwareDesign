@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>店員訂單管理</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .order {
+      background-color: #ffffff;
+      border-left: 6px solid #ff9800;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 600px;
+      border-radius: 8px;
+      transition: transform 0.2s;
+    }
+
+    .order:hover {
+      transform: scale(1.01);
+    }
+
+    .order p {
+      margin: 6px 0;
+      line-height: 1.5;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .btn-group {
+      margin-top: 12px;
+    }
+
+    .btn-group button {
+      margin-right: 8px;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-group button:first-child {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-group button:first-child:hover {
+      background-color: #43a047;
+    }
+
+    .btn-group button:last-child {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .btn-group button:last-child:hover {
+      background-color: #e53935;
+    }
+
+    button {
+      padding: 6px 12px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background-color: #545454;
+    }
+
+    #returnButton {
+      display: block;
+      margin: 30px auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>店員後台 - 訂單管理</h2>
+  <div id="admin-order-list">載入中...</div>
+  <button id="returnButton" onclick="window.location.href='login.html'">回登入頁</button>
+
+  <script>
+    function loadOrders() {
+      const orders = JSON.parse(localStorage.getItem("orders")) || [];
+      const list = document.getElementById("admin-order-list");
+      list.innerHTML = "";
+
+      const activeOrders = orders.filter(order => order.orderStatus === "進行中");
+
+      if (activeOrders.length === 0) {
+        list.innerHTML = "<p>目前沒有進行中的訂單。</p>";
+        return;
+      }
+
+      activeOrders.forEach((order, index) => {
+        const div = document.createElement("div");
+        div.className = "order";
+
+        const itemList = order.orderItems.map(item =>
+          `<li>${item.name} x${item.quantity || 1}</li>`
+        ).join("");
+
+        div.innerHTML = `
+          <p><strong>訂單編號：</strong>${order.orderID}</p>
+          <p><strong>時間：</strong>${order.orderTime}</p>
+          <p><strong>狀態：</strong>${order.orderStatus}</p>
+          <div><strong>品項：</strong><ul>${itemList}</ul></div>
+          <p><strong>總金額：</strong>$${order.total || 0}</p>
+          <div class="btn-group">
+            <button onclick="updateStatus('${order.orderID}', 'completed')">標記為完成</button>
+            <button onclick="updateStatus('${order.orderID}', 'cancelled')">取消訂單</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function updateStatus(orderID, newStatus) {
+      const orders = JSON.parse(localStorage.getItem("orders")) || [];
+      const index = orders.findIndex(order => order.orderID === orderID);
+      if (index === -1) return;
+
+      orders[index].orderStatus = newStatus;
+      localStorage.setItem("orders", JSON.stringify(orders));
+
+      const notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+      const statusText = newStatus === "completed" ? "已完成" : "已取消";
+      notifications.push({
+        type: `訂單${statusText}`,
+        message: `您的訂單編號 ${orderID} 已被標記為「${statusText}」。`,
+        time: new Date().toLocaleString()
+      });
+      localStorage.setItem("notifications", JSON.stringify(notifications));
+
+      alert("狀態已更新！");
+      loadOrders();
+    }
+
+    document.addEventListener("DOMContentLoaded", loadOrders);
+  </script>
+</body>
+</html>

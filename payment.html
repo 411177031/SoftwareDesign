@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>付款頁面 - 模擬第三方支付</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .payment-box {
+      background: #ffffff;
+      max-width: 420px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      text-align: left;
+    }
+
+    h2 {
+      text-align: center;
+      color: #27ae60;
+      margin-bottom: 20px;
+    }
+
+    .info {
+      font-size: 16px;
+      margin: 10px 0;
+      color: #555;
+    }
+
+    .amount {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e67e22;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .methods {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+
+    .method {
+        border: 1px solid #ddd;
+        padding: 10px 20px;
+        border-radius: 6px;
+        background-color: #f9f9f9;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .method:hover {
+        background-color: #eee;
+    }
+
+    .method.selected {
+        background-color: #27ae60;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 0 5px rgba(39, 174, 96, 0.6);
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      background-color: #27ae60;
+      color: white;
+      padding: 14px;
+      border: none;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 30px;
+    }
+
+    button:hover {
+      background-color: #219150;
+    }
+  </style>
+</head>
+<body>
+  <div class="payment-box">
+    <h2>第三方支付</h2>
+    <div class="info">訂單編號：<span id="order-id">載入中...</span></div>
+    <div class="amount">NT$ <span id="amount">0</span></div>
+    
+    <div class="methods">
+        <div class="method" onclick="selectMethod(this)">Line Pay</div>
+        <div class="method" onclick="selectMethod(this)">街口支付</div>
+        <div class="method" onclick="selectMethod(this)">信用卡</div>
+    </div>
+
+    <button onclick="completePayment()">模擬付款</button>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderID = urlParams.get("orderID");
+
+    document.getElementById("order-id").textContent = orderID || "未提供";
+
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    const order = orders.find(o => o.orderID === orderID);
+
+    if (order) {
+        const total = order.orderItems.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+        document.getElementById("amount").textContent = total;
+    } else {
+        document.getElementById("amount").textContent = "訂單不存在";
+    }
+
+    function completePayment() {
+        orders = orders.map(order => {
+            if (order.orderID === orderID) {
+                return { ...order, paymentStatus: "已付款" };
+            }
+            return order;
+        });
+        localStorage.setItem("orders", JSON.stringify(orders));
+        alert("付款完成！將返回首頁");
+        window.location.href = "index.html";
+    }
+
+    function selectMethod(element) {
+        document.querySelectorAll('.method').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+    }
+  </script>
+</body>
+</html>
+

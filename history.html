@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>訂單紀錄</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+  
+    header {
+      text-align: center;
+      margin: 10px 0; /* 上下邊距縮小到10px */
+      justify-content: center; /* 讓 header 內容在中間 */
+      align-items: center;
+      position: relative; /* 讓 .menu 的絕對定位基準 */
+      display: flex;
+    }
+
+    header h1 {
+      font-size: 1.8rem; /* 字體變小，約等於 28.8px */
+      margin: 0;         /* 去掉h1本身的上下預設外距 */
+      font-weight: 700;  /* 可視需要調整字重 */
+      color: #222;
+    }
+
+    .menu {
+      margin-right: 10px;
+      position: relative;
+    }
+
+    .menu ul {
+            list-style: none;
+            padding: 5px 10px;
+            margin: 0;
+            background-color: rgba(255, 255, 255, 0.8); /* 白色透明背景 */
+            border-radius: 5px;
+    }
+
+    .menu button {
+      font-size: 1.5em;
+      background: transparent;
+      border: none;
+      color: #333; /* 深灰色，和選單連結一致 */
+      cursor: pointer;
+    }
+
+    #menuList {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: rgba(255, 255, 255, 0.9);
+      list-style: none;
+      margin: 0;
+      padding: 0.5em;
+      display: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border-radius: 4px;
+      min-width: 120px; /* 🚀 加這一行，給個足夠寬度 */
+    }
+
+    #menuList li {
+      margin: 0.2em 0;
+    }
+
+    #menuList li a {
+      color: #333;
+      text-decoration: none;
+    }
+
+    #menuList li a:hover {
+      color: #555;
+    }
+
+    .menu ul li a {
+      color: #333; /* 深灰色 */
+      text-decoration: none;
+      display: block;
+      padding: 5px 0;
+    }
+
+    .menu ul li a:hover {
+      color: #555; /* 滑鼠懸停變更色 */
+    }
+
+  
+    #order-history {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  
+    .order {
+      background-color: #fff;
+      border-left: 6px solid #888;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: transform 0.2s;
+    }
+  
+    .order:hover {
+      transform: scale(1.01);
+    }
+  
+    .order.completed {
+      border-left-color: #28a745;
+    }
+  
+    .order.cancelled {
+      border-left-color: #dc3545;
+      background-color: #ffffff;
+    }
+  
+    .order p {
+      margin: 6px 0;
+      color: #333;
+    }
+  
+    .order .items {
+      margin-top: 10px;
+    }
+  
+    .order ul {
+      padding-left: 20px;
+      margin: 5px 0;
+    }
+  
+    .order li {
+      margin-bottom: 4px;
+    }
+  </style>
+  
+</head>
+<body>
+  <header>
+    <div class="menu">
+      <button id="menuButton">☰</button>
+      <ul id="menuList" style="display: none;">
+        <li><a href="index.html">首頁</a></li>
+        <li><a href="order.html">點單頁面</a></li>
+        <li><a href="current_order.html">當前訂單</a></li>
+        <li><a href="notification.html">通知中心</a></li>
+        <li><a href="history.html">訂單紀錄</a></li>
+      </ul>
+    </div>
+    <h1>訂單紀錄</h1>
+  </header>
+
+  <div id="order-history">
+    <p>載入中...</p>
+  </div>
+
+  <script>
+    document.getElementById('menuButton').addEventListener('click', function() {
+      const menuList = document.getElementById('menuList');
+      menuList.style.display = (menuList.style.display === 'none') ? 'block' : 'none';
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const historyContainer = document.getElementById("order-history");
+
+      const orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+      const pastOrders = orders.filter(order =>
+        order.orderStatus === "completed" || order.orderStatus === "cancelled"
+      );
+
+      if (pastOrders.length === 0) {
+        historyContainer.innerHTML = "<p>目前沒有訂單紀錄。</p>";
+        return;
+      }
+
+      // 時間從新到舊排序
+      pastOrders.sort((a, b) => Date.parse(b.orderTime) - Date.parse(a.orderTime));
+
+      historyContainer.innerHTML = "";
+      pastOrders.forEach(order => {
+        const orderDiv = document.createElement("div");
+        orderDiv.classList.add("order");
+
+        if (order.orderStatus === "completed") {
+          orderDiv.classList.add("completed");
+        } else if (order.orderStatus === "cancelled") {
+          orderDiv.classList.add("cancelled");
+        }
+
+        const itemList = order.orderItems.map(item =>
+          `<li>${item.name} x${item.quantity || 1}（$${item.price * (item.quantity || 1)}）</li>`
+        ).join("");
+
+        orderDiv.innerHTML = `
+          <p><strong>訂單編號：</strong>${order.orderID}</p>
+          <p><strong>狀態：</strong>${order.orderStatus === "completed" ? "已完成" : "已取消"}</p>
+          <p><strong>時間：</strong>${order.orderTime}</p>
+          <div class="items">
+            <strong>品項：</strong>
+            <ul>${itemList}</ul>
+          </div>
+          <p><strong>總金額：</strong>$${order.orderItems.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0)}</p>
+        `;
+        historyContainer.appendChild(orderDiv);
+      });
+    });
+  </script>
+</body>
+</html>

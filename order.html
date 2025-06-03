@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>點單頁面</title>
+    <style>
+        body {
+            font-family: "Noto Sans TC", Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin: 10px 0; /* 上下邊距縮小到10px */
+            justify-content: center; /* 讓 header 內容在中間 */
+            align-items: center;
+            position: relative; /* 讓 .menu 的絕對定位基準 */
+            display: flex;
+        }
+
+        header h1 {
+            font-size: 1.8rem; /* 字體變小，約等於 28.8px */
+            margin: 0;         /* 去掉h1本身的上下預設外距 */
+            font-weight: 700;  /* 可視需要調整字重 */
+            color: #222;
+        }
+
+        .menu {
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .menu ul {
+            list-style: none;
+            padding: 5px 10px;
+            margin: 0;
+            background-color: rgba(255, 255, 255, 0.8); /* 白色透明背景 */
+            border-radius: 5px;
+        }
+
+        .menu button {
+            font-size: 1.5em;
+            background: transparent;
+            border: none;
+            color: #333; /* 深灰色，和選單連結一致 */
+            cursor: pointer;
+        }
+
+        #menuList {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(255, 255, 255, 0.9);
+            list-style: none;
+            margin: 0;
+            padding: 0.5em;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            min-width: 120px; /* 🚀 加這一行，給個足夠寬度 */
+        }
+
+        #menuList li {
+            margin: 0.2em 0;
+        }
+
+        #menuList li a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        #menuList li a:hover {
+            color: #555;
+        }
+
+        .menu ul li a {
+            color: #333; /* 深灰色 */
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+
+        .menu ul li a:hover {
+            color: #555; /* 滑鼠懸停變更色 */
+        }
+
+        #order-list {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        #submitButton, #deleteButton {
+            display: inline-block;
+            margin: 10px 10px 0;
+            padding: 12px 25px;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #submitButton {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            display: block;
+            margin: 30px auto;
+        }
+
+        #submitButton:hover {
+            background-color: #545454;
+        }
+
+        #deleteButton {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #deleteButton:hover {
+            background-color: #c0392b;
+        }
+
+        p {
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="menu">
+            <button id="menuButton">☰</button>
+            <ul id="menuList" style="display: none;">
+                <li><a href="index.html">首頁</a></li>
+                <li><a href="order.html">點單頁面</a></li>
+                <li><a href="current_order.html">當前訂單</a></li>
+                <li><a href="notification.html">通知中心</a></li>
+                <li><a href="history.html">訂單紀錄</a></li>
+            </ul>
+        </div>
+        <h1>點單頁面</h1>
+    </header>
+
+    <div id="order-list">
+        <!-- order list will be injected here -->
+    </div>
+    
+    <button id="submitButton" onclick="submitOrder()">提交訂單</button>
+
+    <script>
+        document.getElementById('menuButton').addEventListener('click', function() {
+            const menuList = document.getElementById('menuList');
+            menuList.style.display = (menuList.style.display === 'none') ? 'block' : 'none';
+        });
+
+        function loadOrder() {
+            const order = JSON.parse(localStorage.getItem('currentOrder')) || [];
+            const orderListDiv = document.getElementById('order-list');
+            orderListDiv.innerHTML = '';
+
+            if (order.length === 0) {
+                orderListDiv.innerHTML = '<p>目前沒有選購的商品</p>';
+                return;
+            }
+
+            order.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.innerHTML = `${item.name} - $${item.price} <button id="deleteButton" onclick="removeItem(${index})">刪除</button>`;
+                orderListDiv.appendChild(itemDiv);
+            });
+        }
+
+        function removeItem(index) {
+            let order = JSON.parse(localStorage.getItem('currentOrder')) || [];
+            order.splice(index, 1);
+            localStorage.setItem('currentOrder', JSON.stringify(order));
+            loadOrder();
+        }
+
+        function submitOrder() {
+            const order = JSON.parse(localStorage.getItem('currentOrder')) || [];
+            if (order.length === 0) {
+                alert('訂單為空，無法提交！');
+                return;
+            }
+
+            // 計算總金額
+            const total = order.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+
+            // 整理訂單格式
+            const newOrder = {
+                orderID: `ORD${Date.now()}`,
+                orderItems: order,
+                orderStatus: "進行中",
+                orderTime: new Date().toLocaleString(),
+                total: total
+            };
+
+            const orders = JSON.parse(localStorage.getItem('orders')) || [];
+            orders.push(newOrder);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            alert('訂單已提交！');
+            localStorage.setItem('currentOrder', JSON.stringify([]));
+            loadOrder();
+            // 跳轉至付款頁面
+            window.location.href = `payment.html?orderID=${newOrder.orderID}`;
+        }
+
+        window.onload = loadOrder;
+    </script>
+</body>
+</html>

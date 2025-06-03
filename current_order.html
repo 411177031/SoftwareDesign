@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>當前訂單</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", Arial, sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+      margin: 0;
+    }
+
+    header {
+      text-align: center;
+      margin: 10px 0; /* 上下邊距縮小到10px */
+      justify-content: center; /* 讓 header 內容在中間 */
+      align-items: center;
+      position: relative; /* 讓 .menu 的絕對定位基準 */
+      display: flex;
+    }
+
+    header h1 {
+      font-size: 1.8rem; /* 字體變小，約等於 28.8px */
+      margin: 0;         /* 去掉h1本身的上下預設外距 */
+      font-weight: 700;  /* 可視需要調整字重 */
+      color: #222;
+    }
+
+    .menu {
+      margin-right: 10px;
+      position: relative;
+    }
+
+    .menu ul {
+            list-style: none;
+            padding: 5px 10px;
+            margin: 0;
+            background-color: rgba(255, 255, 255, 0.8); /* 白色透明背景 */
+            border-radius: 5px;
+    }
+
+    .menu button {
+      font-size: 1.5em;
+      background: transparent;
+      border: none;
+      color: #333; /* 深灰色，和選單連結一致 */
+      cursor: pointer;
+    }
+
+    #menuList {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: rgba(255, 255, 255, 0.9);
+      list-style: none;
+      margin: 0;
+      padding: 0.5em;
+      display: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border-radius: 4px;
+      min-width: 120px; /* 🚀 加這一行，給個足夠寬度 */
+    }
+
+    #menuList li {
+      margin: 0.2em 0;
+    }
+
+    #menuList li a {
+      color: #333;
+      text-decoration: none;
+    }
+
+    #menuList li a:hover {
+      color: #555;
+    }
+
+    .menu ul li a {
+      color: #333; /* 深灰色 */
+      text-decoration: none;
+      display: block;
+      padding: 5px 0;
+    }
+
+    .menu ul li a:hover {
+      color: #555; /* 滑鼠懸停變更色 */
+    }
+
+    #order-container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+
+    .order {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .order p {
+      margin: 5px 0;
+      color: #333;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin: 10px 0;
+    }
+
+    li {
+      margin-bottom: 5px;
+    }
+
+    .cancel-button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .cancel-button:hover {
+      background-color: #c0392b;
+    }
+
+    p, li {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="menu">
+      <button id="menuButton">☰</button>
+      <ul id="menuList" style="display: none;">
+        <li><a href="index.html">首頁</a></li>
+        <li><a href="order.html">點單頁面</a></li>
+        <li><a href="current_order.html">當前訂單</a></li>
+        <li><a href="notification.html">通知中心</a></li>
+        <li><a href="history.html">訂單紀錄</a></li>
+      </ul>
+    </div>
+    <h1>當前訂單</h1>
+  </header>
+
+  <div id="order-container">
+    <p>載入中...</p>
+  </div>
+
+  <script>
+    document.getElementById('menuButton').addEventListener('click', function() {
+      const menuList = document.getElementById('menuList');
+      menuList.style.display = (menuList.style.display === 'none') ? 'block' : 'none';
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const orders = JSON.parse(localStorage.getItem("orders")) || [];
+      // 只保留進行中的訂單
+      const ongoingOrders = orders.filter(order => order.orderStatus === "進行中");
+
+      const orderContainer = document.getElementById("order-container");
+
+      if (ongoingOrders.length === 0) {
+        orderContainer.innerHTML = "<p>目前沒有進行中的訂單。</p>";
+        return;
+      }
+
+      orderContainer.innerHTML = "";
+      ongoingOrders.forEach(order => {
+        const orderDiv = document.createElement("div");
+        orderDiv.className = "order";
+        const totalAmount = order.orderItems.reduce(
+          (sum, item) => sum + item.price * (item.quantity || 1),
+          0
+        );
+
+        orderDiv.innerHTML = `
+          <p><strong>訂單編號：</strong>${order.orderID}</p>
+          <p><strong>訂單時間：</strong>${order.orderTime}</p>
+          <p><strong>狀態：</strong>${order.orderStatus}</p>
+          <p><strong>品項：</strong></p>
+          <ul>
+            ${order.orderItems.map(item => `
+              <li>${item.name} x ${item.quantity || 1}（$${item.price * (item.quantity || 1)}）</li>
+            `).join("")}
+          </ul>
+          <p><strong>總金額：</strong>$${totalAmount}</p>
+        `;
+
+        const cancelButton = document.createElement("button");
+        cancelButton.textContent = "取消訂單";
+        cancelButton.classList.add("cancel-button"); // 加上類別
+        cancelButton.onclick = function () {
+          cancelOrder(order.orderID);
+        };
+        orderDiv.appendChild(cancelButton);
+
+        orderContainer.appendChild(orderDiv);
+      });
+
+      function cancelOrder(orderID) {
+        if (confirm("確定要取消這筆訂單嗎？")) {
+          const updatedOrders = orders.map(order => {
+            if (order.orderID === orderID) {
+              return { ...order, orderStatus: "已取消" };
+            }
+            return order;
+          });
+
+          localStorage.setItem("orders", JSON.stringify(updatedOrders));
+          alert("訂單已取消");
+          location.reload();
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
