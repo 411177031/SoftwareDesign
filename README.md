@@ -6,6 +6,12 @@
 
 ---
 
+##  Demo 與展示
+
+影片 Demo：[點我前往](https://www.canva.com/design/DAGpSu8l7-4/9dMf_WkcQBxCPuaKIqjwJQ/edit?utm_content=DAGpSu8l7-4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
+---
+
 ##  系統執行方式
 
 * 本系統為純前端模擬，無需伺服器，點擊任一檔案開啟，即可操作。
@@ -26,9 +32,3 @@
 | ----------------------- | ----------- |
 | HTML / CSS / JavaScript | 前端開發        |
 | VS Code                 | 程式開發環境      |
-
----
-
-##  Demo 與展示
-
-影片 Demo：[點我前往](https://www.canva.com/design/DAGpSu8l7-4/9dMf_WkcQBxCPuaKIqjwJQ/edit?utm_content=DAGpSu8l7-4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
