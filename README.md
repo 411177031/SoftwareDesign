@@ -8,7 +8,7 @@
 
 ##  Demo 與展示
 
-影片 Demo：[點我前往](https://www.canva.com/design/DAGpSu8l7-4/9dMf_WkcQBxCPuaKIqjwJQ/edit?utm_content=DAGpSu8l7-4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+影片 Demo：[點我前往](https://www.canva.com/design/DAGpSu8l7-4/XhwsS20A6Nk1uQtRUxpjzw/watch?utm_content=DAGpSu8l7-4&utm_campaign=share_your_design&utm_medium=link2&utm_source=shareyourdesignpanel)
 
 ---
 
